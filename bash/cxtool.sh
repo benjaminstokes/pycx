@@ -1,48 +1,25 @@
 #!/bin/bash
-set -x
+#set -x
 
-###############################################################################
-#
-#  ./cxtool.sh conf-file github_url git_ref
-#
-#
-#
-# cxtool.sh will
-#   1. Clone a repo from github.com
-#   2. Check out a branch of interest
-#   3. Scan that branch via Cx CLI
-#   4. Parse the Cx CLI XML report to generate summary report
-#   5. Email the summary report to a configurable list of emails
-#   6. Cleanup
-#
-# Requirements:
-#   1. bash
-#   2. git
-#   3. xpath
-#   4. access to /tmp - used as a cache and working directory
-#   5. Cx CLI
-#   6. mail - and OS is configured to send outgoing email via whatever
-#             server is needed
-#
-#
+# cxtool.sh - see ReadMe.txt
 
 # Check if tools required are available or exit
-if ! [ -x "$(command -v git)" ]; then
+if ! [[ -x "$(command -v git)" ]]; then
   echo "Error: git is not installed but is required."
   exit 1
 fi
 
-if ! [ -x "$(command -v xpath)" ]; then
+if ! [[ -x "$(command -v xpath)" ]]; then
   echo "Error: xpath is not installed but is required."
   exit 1
 fi
 
-if ! [ -x "$(command -v mail)" ]; then
+if ! [[ -x "$(command -v mail)" ]]; then
   echo "Error: mail is not installed but is required."
   exit 1
 fi
 
-if ! [ -x "$(command -v runCxConsole.sh)" ]; then
+if ! [[ -x "$(command -v runCxConsole.sh)" ]]; then
   echo "Error: runCxConsole.sh is not installed but is required."
   exit 1
 fi
@@ -129,7 +106,7 @@ echo "  Low:    $count_severity_low"
 
 touch "$TEMP_DIR/scan-report.html"
 echo "<html><head><title>Scan summary for $GITHUB_REPO#$GIT_REF</title></head>" > "$TEMP_DIR/scan-report.html"
-echo "<body><h1>Scan summary for $GITHUB_REPO#$GIT_REF</h1>" >> "$TEMP_DIR/scan-report.html"
+echo "<body><a href="$GITHUB_REPO#$GIT_REF">view source</a><br/><h1>Scan summary for $GITHUB_REPO#$GIT_REF</h1>" >> "$TEMP_DIR/scan-report.html"
 echo "<h2>Results per severity</h2>" >> "$TEMP_DIR/scan-report.html"
 echo "<table><tr><th>Total</th><th>High</th><th>Medium</th><th>Low</th></tr>" >> "$TEMP_DIR/scan-report.html"
 echo "<tr><td>$count_total</td><td>$count_severity_high</td><td>$count_severity_medium</td><td>$count_severity_low</td></tr></table>" >> "$TEMP_DIR/scan-report.html"
@@ -152,10 +129,11 @@ done
 echo "</table></body></html>" >> "$TEMP_DIR/scan-report.html"
 
 
-# Send Email
+# Send e-mail to all configured recipients
 while read email
 do
-  mail --append="Content-type: text/html" -s "Scan results" $email < /tmp/cxscan/scan-report.html
+  mail --append="Content-type: text/html" -s "Scan results $GITHUB_REPO#$GIT_REF" $email < /tmp/cxscan/scan-report.html
   echo "email sent to $email"
 done < "$EMAIL_CONF"
  
+exit 0
