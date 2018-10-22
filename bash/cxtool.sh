@@ -4,25 +4,17 @@
 # cxtool.sh - see ReadMe.txt
 
 # Check if tools required are available or exit
-if ! [[ -x "$(command -v git)" ]]; then
-  echo "Error: git is not installed but is required."
-  exit 1
-fi
+check_tool() {
+  if ! [[ -x "$(command -v $1)" ]]; then
+    echo "Error: $1 is not installed but is required."
+    exit 1
+  fi
+}
 
-if ! [[ -x "$(command -v xpath)" ]]; then
-  echo "Error: xpath is not installed but is required."
-  exit 1
-fi
-
-if ! [[ -x "$(command -v mail)" ]]; then
-  echo "Error: mail is not installed but is required."
-  exit 1
-fi
-
-if ! [[ -x "$(command -v runCxConsole.sh)" ]]; then
-  echo "Error: runCxConsole.sh is not installed but is required."
-  exit 1
-fi
+check_tool git
+check_tool xpath
+check_tool mail
+check_tool runCxConsole.sh
 
 # Load in the conf file and apply arg overrides
 if [[ -z "$1" ]]; then
@@ -41,6 +33,7 @@ GIT_REPO_NAME=$(basename "$GITHUB_REPO")
 TEMP_DIR=/tmp/cxscan
 CxComment="Scanning $GITHUB_REPO#$GIT_REF via cxtool.sh"
 CxLocationPath="$TEMP_DIR/$GIT_REPO_NAME"
+
 
 if [[ -z "$GITHUB_REPO" ]]; then
     echo "GITHUB_REPO env variable must be set" 1>&2
